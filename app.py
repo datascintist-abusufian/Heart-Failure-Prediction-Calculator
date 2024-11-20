@@ -263,7 +263,7 @@ def display_results(risk_score, inputs):
     st.markdown(f"## Risk Assessment Results")
     
     # Progress bar
-    st.progress(risk_score/100)
+    st.progress(risk_score / 100)
     
     # Risk category and recommendations
     if risk_score < 20:
@@ -315,18 +315,54 @@ def display_results(risk_score, inputs):
 
 def main():
     """Main application function"""
-    # [Previous code remains the same until the calculate button section]
+    st.title("Heart Failure Risk Calculator")
+    st.markdown("### Comprehensive Risk Assessment Tool")
+    
+    # Input sections
+    st.header("Patient Information")
+    col1, col2 = st.columns(2)
+    with col1:
+        age = st.number_input("Age (years)", min_value=18, max_value=120, value=30, step=1)
+        weight = st.number_input("Weight (kg)", min_value=30.0, max_value=200.0, value=70.0, step=0.1)
+        height = st.number_input("Height (m)", min_value=1.0, max_value=2.5, value=1.75, step=0.01)
+        sex = st.selectbox("Sex", ["Male", "Female"])
+    with col2:
+        systolic_bp = st.number_input("Systolic Blood Pressure (mmHg)", min_value=80, max_value=300, value=120, step=1)
+        diastolic_bp = st.number_input("Diastolic Blood Pressure (mmHg)", min_value=40, max_value=200, value=80, step=1)
+        heart_rate = st.number_input("Heart Rate (bpm)", min_value=30, max_value=200, value=70, step=1)
+    
+    st.header("Clinical and Laboratory Data")
+    col1, col2 = st.columns(2)
+    with col1:
+        smoking = st.selectbox("Smoking Status", ["Non-smoker", "Former", "Current"])
+        diabetes = st.selectbox("Diabetes", ["No", "Yes"])
+        hypertension = st.selectbox("Hypertension", ["No", "Yes"])
+    with col2:
+        ejection_fraction = st.number_input("Ejection Fraction (%)", min_value=10.0, max_value=80.0, value=55.0, step=0.1)
+        bnp_level = st.number_input("BNP Level (pg/mL)", min_value=0.0, max_value=5000.0, value=100.0, step=1.0)
+    
+    st.header("Laboratory Values")
+    col1, col2 = st.columns(2)
+    with col1:
+        creatinine = st.number_input("Creatinine (mg/dL)", min_value=0.0, max_value=10.0, value=1.0, step=0.01)
+        sodium = st.number_input("Sodium (mEq/L)", min_value=120, max_value=160, value=140, step=1)
+    with col2:
+        potassium = st.number_input("Potassium (mEq/L)", min_value=2.0, max_value=10.0, value=4.0, step=0.1)
+        hemoglobin = st.number_input("Hemoglobin (g/dL)", min_value=5.0, max_value=20.0, value=14.0, step=0.1)
 
+    # Calculate BMI
+    bmi = calculate_bmi(weight, height)
+    st.markdown(f"### Calculated BMI: {bmi:.1f}")
+    
     # Calculate Button
     st.markdown("<br>", unsafe_allow_html=True)
-    col_button1, col_button2, col_button3 = st.columns([1,2,1])
+    col_button1, col_button2, col_button3 = st.columns([1, 2, 1])
     with col_button2:
         calculate_button = st.button("Calculate Risk Score", type="primary", use_container_width=True)
-
+    
     if calculate_button:
         if validate_inputs(age, bmi, systolic_bp, diastolic_bp, heart_rate):
             with st.spinner('Analyzing risk factors...'):
-                # Progress animation
                 progress_bar = st.progress(0)
                 for i in range(100):
                     time.sleep(0.01)
@@ -443,179 +479,6 @@ RECOMMENDATIONS
                         "hypertension": hypertension
                     }
                 })
-                    
-                    # Show download button for report
-                    if st.button("📥 Download Report"):
-                        report = {
-                            "Assessment Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "Risk Score": f"{risk_score:.1f}%",
-                            "Patient Data": {
-                                "Demographics": {
-                                    "Age": age,
-                                    "Sex": sex,
-                                    "BMI": f"{bmi:.1f}"
-                                },
-                                "Vital Signs": {
-                                    "Blood Pressure": f"{systolic_bp}/{diastolic_bp} mmHg",
-                                    "Heart Rate": f"{heart_rate} bpm"
-                                },
-                                "Clinical Measurements": {
-                                    "Ejection Fraction": f"{ejection_fraction}%",
-                                    "BNP Level": f"{bnp_level} pg/mL"
-                                },
-                                "Risk Factors": {
-                                    "Smoking": smoking,
-                                    "Diabetes": diabetes,
-                                    "Hypertension": hypertension
-                                },
-                                "Laboratory Values": {
-                                    "Creatinine": f"{creatinine} mg/dL",
-                                    "Sodium": f"{sodium} mEq/L",
-                                    "Potassium": f"{potassium} mEq/L",
-                                    "Hemoglobin": f"{hemoglobin} g/dL"
-                                }
-                            },
-                            "Recommendations": get_recommendations(risk_score)
-                        }
-                        
-                        # Convert to JSON string
-                        report_json = json.dumps(report, indent=2)
-                        
-                        # Create download button
-                        st.download_button(
-                            label="Download Detailed Report",
-                            data=report_json,
-                            file_name=f"heart_risk_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
-                            mime="application/json"
-                        )
-
-    with tab2:
-        st.markdown("""
-            ## About This Calculator
-            
-            This Heart Failure Risk Calculator utilizes advanced algorithms to assess heart failure risk based on multiple clinical parameters and established medical guidelines.
-            
-            ### Key Features:
-            - Comprehensive risk assessment using multiple parameters
-            - Real-time calculation and visualization
-            - Evidence-based risk factors analysis
-            - Personalized recommendations
-            - Detailed health metrics visualization
-            - Downloadable assessment reports
-            
-            ### Risk Factors Considered:
-            1. **Demographics**
-               - Age
-               - Sex
-               - Body Mass Index (BMI)
-            
-            2. **Vital Signs**
-               - Blood Pressure
-               - Heart Rate
-            
-            3. **Clinical Measurements**
-               - Ejection Fraction
-               - BNP Level
-            
-            4. **Medical History**
-               - Smoking Status
-               - Diabetes
-               - Hypertension
-            
-            5. **Laboratory Values**
-               - Creatinine
-               - Sodium
-               - Potassium
-               - Hemoglobin
-            
-            ### How to Use:
-            1. Enter your clinical parameters in the Calculator tab
-            2. Click "Calculate Risk Score"
-            3. Review your risk assessment and recommendations
-            4. Download a detailed report for your records
-            
-            ### Scientific Background:
-            This calculator integrates multiple risk factors and biomarkers known to be associated with heart failure:
-            - Age and sex-specific risk factors
-            - Blood pressure and heart rate dynamics
-            - Cardiac biomarkers (BNP, ejection fraction)
-            - Comorbidities (diabetes, hypertension)
-            - Laboratory values
-            
-            ### References:
-            - American Heart Association Guidelines
-            - European Society of Cardiology Guidelines
-            - World Health Organization BMI Classifications
-            
-            ### Disclaimer:
-            This calculator is for educational and informational purposes only. Always consult with healthcare providers for medical decisions and diagnosis.
-        """)
-
-def get_recommendations(risk_score):
-    """Generate recommendations based on risk score"""
-    if risk_score < 20:
-        return [
-            "Maintain current healthy lifestyle",
-            "Continue regular check-ups",
-            "Monitor blood pressure periodically",
-            "Stay physically active"
-        ]
-    elif risk_score < 50:
-        return [
-            "Schedule follow-up with healthcare provider",
-            "Review and modify lifestyle factors",
-            "Monitor blood pressure regularly",
-            "Consider stress management techniques"
-        ]
-    else:
-        return [
-            "Seek immediate medical consultation",
-            "Start monitoring blood pressure daily",
-            "Review medication compliance",
-            "Make urgent lifestyle modifications"
-        ]
-
-def generate_report(inputs, risk_score):
-    """Generate a detailed report"""
-    report = {
-        "Heart Failure Risk Assessment Report": {
-            "Assessment Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "Risk Assessment": {
-                "Overall Risk Score": f"{risk_score:.1f}%",
-                "Risk Category": "Low" if risk_score < 20 else "Moderate" if risk_score < 50 else "High",
-                "Recommendations": get_recommendations(risk_score)
-            },
-            "Patient Data": {
-                "Demographics": {
-                    "Age": inputs["age"],
-                    "Sex": inputs["sex"],
-                    "BMI": f"{inputs['bmi']:.1f}",
-                    "Weight": f"{inputs['weight']} kg",
-                    "Height": f"{inputs['height']} m"
-                },
-                "Vital Signs": {
-                    "Blood Pressure": f"{inputs['systolic_bp']}/{inputs['diastolic_bp']} mmHg",
-                    "Heart Rate": f"{inputs['heart_rate']} bpm"
-                },
-                "Clinical Measurements": {
-                    "Ejection Fraction": f"{inputs['ejection_fraction']}%",
-                    "BNP Level": f"{inputs['bnp_level']} pg/mL"
-                },
-                "Risk Factors": {
-                    "Smoking Status": inputs["smoking"],
-                    "Diabetes": inputs["diabetes"],
-                    "Hypertension": inputs["hypertension"]
-                },
-                "Laboratory Values": {
-                    "Creatinine": f"{inputs['creatinine']} mg/dL",
-                    "Sodium": f"{inputs['sodium']} mEq/L",
-                    "Potassium": f"{inputs['potassium']} mEq/L",
-                    "Hemoglobin": f"{inputs['hemoglobin']} g/dL"
-                }
-            }
-        }
-    }
-    return report
 
 if __name__ == "__main__":
     main()
