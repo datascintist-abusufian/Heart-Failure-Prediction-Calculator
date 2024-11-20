@@ -13,8 +13,9 @@ import json
 def load_images():
     """Load and cache GIF images for the application."""
     try:
-        heart_gif = Image.open('/Users/mdabusufian/Downloads/calculator/heart failure.gif')
-        asset_gif = Image.open('/Users/mdabusufian/Downloads/calculator/image-asset.gif')
+        # Updated GitHub raw URLs
+        heart_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/heart%20failure.gif"
+        asset_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/image-asset.gif"
         return heart_gif, asset_gif
     except Exception as e:
         st.warning(f"Error loading images: {str(e)}")
