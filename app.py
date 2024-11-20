@@ -11,80 +11,41 @@ import json
 import base64
 from io import BytesIO
 
-# Configure page settings
 st.set_page_config(
     page_title="Heart Failure Risk Calculator",
     page_icon="❤️",
     layout="wide"
 )
 
-# Custom CSS
 st.markdown("""
     <style>
-    .stPlotlyChart {
-        margin: 2rem 0;
-    }
-    .plot-container {
-        margin-top: 2rem;
-    }
-    .main-header {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 1rem;
-    }
-    .header-image {
-        max-width: 150px;
-        height: auto;
-    }
-    .risk-box {
-        padding: 20px;
-        border-radius: 10px;
-        margin: 10px 0;
-    }
-    .low-risk {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-    }
-    .medium-risk {
-        background-color: #fff3cd;
-        border: 1px solid #ffeeba;
-    }
-    .high-risk {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-    }
+    .stPlotlyChart {margin: 2rem 0;}
+    .plot-container {margin-top: 2rem;}
+    .main-header {display: flex; align-items: center; justify-content: center; padding: 1rem;}
+    .header-image {max-width: 150px; height: auto;}
+    .risk-box {padding: 20px; border-radius: 10px; margin: 10px 0;}
+    .low-risk {background-color: #d4edda; border: 1px solid #c3e6cb;}
+    .medium-risk {background-color: #fff3cd; border: 1px solid #ffeeba;}
+    .high-risk {background-color: #f8d7da; border: 1px solid #f5c6cb;}
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
 if 'previous_calculations' not in st.session_state:
     st.session_state.previous_calculations = []
 
 def create_icon_image(color, icon_type="heart"):
-    """Create custom icon images"""
     img = Image.new('RGB', (200, 200), color)
     draw = ImageDraw.Draw(img)
-    
     if icon_type == "heart":
-        # Draw heart shape
-        points = [
-            (100, 30),   # top
-            (180, 100),  # right
-            (100, 170),  # bottom
-            (20, 100),   # left
-        ]
+        points = [(100, 30), (180, 100), (100, 170), (20, 100)]
         draw.polygon(points, fill='white')
     else:
-        # Draw medical cross
         draw.rectangle([80, 40, 120, 160], fill='white')
         draw.rectangle([40, 80, 160, 120], fill='white')
-    
     return img
 
 @st.cache_data(ttl=3600)
 def load_images():
-    """Load and cache images for the application."""
     try:
         heart_img = create_icon_image('#FF6B6B', 'heart')
         med_img = create_icon_image('#4ECDC4', 'cross')
@@ -94,11 +55,9 @@ def load_images():
         return None, None
 
 def calculate_bmi(weight, height):
-    """Calculate BMI from weight and height."""
     return weight / (height ** 2)
 
 def validate_inputs(age, bmi, systolic_bp, diastolic_bp, heart_rate):
-    """Validate clinical input parameters."""
     if systolic_bp <= diastolic_bp:
         st.error("⚠️ Systolic BP must be greater than Diastolic BP")
         return False
@@ -109,8 +68,6 @@ def validate_inputs(age, bmi, systolic_bp, diastolic_bp, heart_rate):
     return True
 
 def calculate_risk_score(inputs):
-    """Calculate comprehensive risk score"""
-    # Extract inputs
     age = inputs["age"]
     bmi = inputs["bmi"]
     systolic_bp = inputs["systolic_bp"]
@@ -121,29 +78,25 @@ def calculate_risk_score(inputs):
     hypertension = inputs["hypertension"]
     ejection_fraction = inputs["ejection_fraction"]
     
-    # Calculate component scores
     age_score = (age - 18) / (120 - 18) * 25
     
-    # BMI scoring
     if bmi < 18.5:
-        bmi_score = 15  # Underweight
+        bmi_score = 15
     elif 18.5 <= bmi < 25:
-        bmi_score = 0   # Normal
+        bmi_score = 0
     elif 25 <= bmi < 30:
-        bmi_score = 10  # Overweight
+        bmi_score = 10
     else:
-        bmi_score = 20  # Obese
+        bmi_score = 20
     
-    # Blood pressure scoring
     bp_score = 0
     if systolic_bp >= 180 or diastolic_bp >= 120:
-        bp_score = 25  # Crisis
+        bp_score = 25
     elif systolic_bp >= 140 or diastolic_bp >= 90:
-        bp_score = 15  # High
+        bp_score = 15
     elif systolic_bp >= 130 or diastolic_bp >= 80:
-        bp_score = 10  # Elevated
+        bp_score = 10
     
-    # Risk factors scoring
     risk_score = 0
     if smoking == "Current":
         risk_score += 15
@@ -154,10 +107,8 @@ def calculate_risk_score(inputs):
     if hypertension == "Yes":
         risk_score += 10
     
-    # Ejection fraction impact
     ef_score = max(0, (55 - ejection_fraction)) * 0.5
     
-    # Calculate final score
     total_score = (
         age_score * 0.2 +
         bmi_score * 0.15 +
@@ -169,10 +120,6 @@ def calculate_risk_score(inputs):
     return min(100, max(0, total_score))
 
 def plot_metrics(inputs, risk_score):
-    """Create simplified visualization of health metrics"""
-    # Create two separate visualizations instead of subplots
-    
-    # 1. Vital Signs Bar Chart
     vital_signs = pd.DataFrame({
         'Metric': ["Heart Rate", "Systolic BP", "Diastolic BP"],
         'Value': [inputs["heart_rate"], inputs["systolic_bp"], inputs["diastolic_bp"]]
@@ -201,7 +148,6 @@ def plot_metrics(inputs, risk_score):
     
     st.plotly_chart(fig1, use_container_width=True)
     
-    # 2. Risk Factors Bar Chart
     risk_factors = pd.DataFrame({
         'Factor': ["Age", "BMI", "Risk Score"],
         'Value': [inputs["age"], inputs["bmi"], risk_score]
@@ -230,7 +176,6 @@ def plot_metrics(inputs, risk_score):
     
     st.plotly_chart(fig2, use_container_width=True)
     
-    # 3. Add BMI and Blood Pressure indicators
     col1, col2 = st.columns(2)
     
     with col1:
@@ -259,13 +204,9 @@ def plot_metrics(inputs, risk_score):
             st.error(f"Stage 2 Hypertension ({sys_bp}/{dia_bp} mmHg)")
 
 def display_results(risk_score, inputs):
-    """Display comprehensive risk assessment results"""
     st.markdown(f"## Risk Assessment Results")
+    st.progress(risk_score/100)
     
-    # Progress bar
-    st.progress(risk_score / 100)
-    
-    # Risk category and recommendations
     if risk_score < 20:
         st.markdown("""
             <div style="padding: 20px; border-radius: 10px; background-color: #d4edda; border: 1px solid #c3e6cb;">
@@ -309,12 +250,10 @@ def display_results(risk_score, inputs):
             </div>
         """.format(risk_score), unsafe_allow_html=True)
     
-    # Display detailed metrics
     st.markdown("### Detailed Health Metrics")
     plot_metrics(inputs, risk_score)
 
 def get_recommendations(risk_score):
-    """Generate recommendations based on risk score"""
     if risk_score < 20:
         return [
             "Maintain current healthy lifestyle",
@@ -337,23 +276,13 @@ def get_recommendations(risk_score):
             "Make urgent lifestyle modifications"
         ]
 
-def get_risk_category(risk_score):
-    """Get risk category based on score"""
-    if risk_score < 20:
-        return "Low"
-    elif risk_score < 50:
-        return "Moderate"
-    else:
-        return "High"
-
 def generate_report(inputs, risk_score):
-    """Generate a detailed report"""
     report = {
         "Heart Failure Risk Assessment Report": {
             "Assessment Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "Risk Assessment": {
                 "Overall Risk Score": f"{risk_score:.1f}%",
-                "Risk Category": get_risk_category(risk_score),
+                "Risk Category": "Low" if risk_score < 20 else "Moderate" if risk_score < 50 else "High",
                 "Recommendations": get_recommendations(risk_score)
             },
             "Patient Data": {
@@ -388,10 +317,129 @@ def generate_report(inputs, risk_score):
     }
     return report
 
-def create_text_report(inputs, risk_score):
-    """Create formatted text report"""
-    return f"""
-Heart Failure Risk Assessment Report
+def main():
+    heart_img, med_img = load_images()
+    
+    tab1, tab2 = st.tabs(["Calculator", "About"])
+
+    with tab1:
+        col1, col2, col3 = st.columns([1, 2, 1])
+        
+        with col1:
+            if heart_img:
+                st.image(heart_img, width=150)
+        
+        with col2:
+            st.title("❤️ Heart Failure Risk Calculator")
+            st.markdown("""
+                <div style='text-align: center;'>
+                    <p style='color: #666; font-size: 1.2em;'>Advanced Risk Assessment Tool</p>
+                </div>
+            """, unsafe_allow_html=True)
+        
+        with col3:
+            if med_img:
+                st.image(med_img, width=150)
+
+        st.markdown("""
+            <div style='text-align: center; padding: 20px; background-color: #f0f2f6; border-radius: 10px;'>
+                <h3>Created by Md Abu Sufian</h3>
+                <p>Researcher in AI & Healthcare | University of Oxford</p>
+                <p>This calculator uses machine learning to assess heart failure risk.</p>
+            </div>
+        """, unsafe_allow_html=True)
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            st.subheader("📋 Demographics")
+            weight = st.number_input("Weight (kg)", 30.0, 200.0, 70.0)
+            height = st.number_input("Height (m)", 1.0, 2.5, 1.7)
+            bmi = calculate_bmi(weight, height)
+            st.info(f"Calculated BMI: {bmi:.1f}")
+            age = st.number_input("Age", 18, 120, 50)
+            sex = st.selectbox("Sex", ["Male", "Female"])
+
+        with col2:
+            st.subheader("🩺 Vital Signs")
+            systolic_bp = st.number_input("Systolic Blood Pressure (mmHg)", 70, 250, 120)
+            diastolic_bp = st.number_input("Diastolic Blood Pressure (mmHg)", 40, 150, 80)
+            heart_rate = st.number_input("Heart Rate (bpm)", 40, 200, 75)
+
+        st.subheader("🔬 Clinical Measurements")
+        col3, col4 = st.columns(2)
+        
+        with col3:
+            ejection_fraction = st.number_input("Ejection Fraction (%)", 10, 80, 55)
+            bnp_level = st.number_input("BNP Level (pg/mL)", 0, 5000, 100)
+
+        with col4:
+            smoking = st.selectbox("Smoking Status", ["Never", "Former", "Current"])
+            diabetes = st.selectbox("Diabetes", ["No", "Yes"])
+            hypertension = st.selectbox("Hypertension", ["No", "Yes"])
+
+        with st.expander("📊 Laboratory Values"):
+            col5, col6 = st.columns(2)
+            with col5:
+                creatinine = st.number_input("Creatinine (mg/dL)", 0.0, 15.0, 1.0)
+                sodium = st.number_input("Sodium (mEq/L)", 120, 150, 140)
+            with col6:
+                potassium = st.number_input("Potassium (mEq/L)", 2.5, 7.0, 4.0)
+                hemoglobin = st.number_input("Hemoglobin (g/dL)", 5.0, 20.0, 14.0)
+
+        st.markdown("<br>", unsafe_allow_html=True)
+        col_button1, col_button2, col_button3 = st.columns([1,2,1])
+        with col_button2:
+            calculate_button = st.button("Calculate Risk Score", type="primary", use_container_width=True)
+
+        if calculate_button:
+            if validate_inputs(age, bmi, systolic_bp, diastolic_bp, heart_rate):
+                with st.spinner('Analyzing risk factors...'):
+                    progress_bar = st.progress(0)
+                    for i in range(100):
+                        time.sleep(0.01)
+                        progress_bar.progress(i + 1)
+                    
+                    inputs = {
+                        "age": age,
+                        "sex": sex,
+                        "weight": weight,
+                        "height": height,
+                        "bmi": bmi,
+                        "systolic_bp": systolic_bp,
+                        "diastolic_bp": diastolic_bp,
+                        "heart_rate": heart_rate,
+                        "ejection_fraction": ejection_fraction,
+                        "bnp_level": bnp_level,
+                        "smoking": smoking,
+                        "diabetes": diabetes,
+                        "hypertension": hypertension,
+                        "creatinine": creatinine,
+                        "sodium": sodium,
+                        "potassium": potassium,
+                        "hemoglobin": hemoglobin
+                    }
+                    
+                    risk_score = calculate_risk_score(inputs)
+                    display_results(risk_score, inputs)
+                    
+                    st.markdown("### 📊 Export Report")
+                    report_data = generate_report(inputs, risk_score)
+                    
+                    col1, col2 = st.columns(2)
+                    
+                    with col1:
+                        json_report = json.dumps(report_data, indent=2)
+                        st.download_button(
+                            label="📥 Download JSON Report",
+                            data=json_report,
+                            file_name=f"heart_risk_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json",
+                            mime="application/json",
+                            help="Download report in JSON format"
+                        )
+                    
+                    with col2:
+                        text_report = f"""Heart Failure Risk Assessment Report
 Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
 RISK ASSESSMENT
@@ -427,31 +475,14 @@ Hemoglobin: {hemoglobin} g/dL
 
 RECOMMENDATIONS
 --------------
-{chr(10).join(get_recommendations(risk_score))}
-"""
-                    st.download_button(
-                        label="📄 Download Text Report",
-                        data=text_report,
-                        file_name=f"heart_risk_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                        mime="text/plain",
-                        help="Download report in text format"
-                    )
-                
-                # Store calculation in session state
-                st.session_state.previous_calculations.append({
-                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    "risk_score": risk_score,
-                    "parameters": {
-                        "age": age,
-                        "sex": sex,
-                        "bmi": bmi,
-                        "blood_pressure": f"{systolic_bp}/{diastolic_bp}",
-                        "heart_rate": heart_rate,
-                        "smoking": smoking,
-                        "diabetes": diabetes,
-                        "hypertension": hypertension
-                    }
-                })
+{chr(10).join(get_recommendations(risk_score))}"""
+                        st.download_button(
+                            label="📄 Download Text Report",
+                            data=text_report,
+                            file_name=f"heart_risk_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                            mime="text/plain",
+                            help="Download report in text format"
+                        )
 
     with tab2:
         st.markdown("""
