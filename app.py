@@ -134,8 +134,7 @@ def create_heart_failure_app():
                <a href="mailto:your.email@example.com">Email</a></p>
         </div>
     """, unsafe_allow_html=True)
-
-```python
+    
     # Main content in tabs
     tab1, tab2 = st.tabs(["Calculator", "About"])
 
