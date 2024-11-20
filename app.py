@@ -9,21 +9,22 @@ import json
 import requests
 from io import BytesIO
 
-# Cache for loading images
-@st.cache_data
+@st.cache_data()  # Note the parentheses
 def load_images():
     """Load and cache GIF images for the application."""
     try:
-        # Updated GitHub raw URLs
+        # Use static placeholder images for testing
         heart_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/heart%20failure.gif"
         asset_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/image-asset.gif"
 
-        # Load heart failure GIF
-        heart_response = requests.get(heart_gif_url)
+        # Add error handling and timeout for requests
+        timeout = 10
+        heart_response = requests.get(heart_gif_url, timeout=timeout)
+        heart_response.raise_for_status()
         heart_gif = Image.open(BytesIO(heart_response.content))
 
-        # Load asset GIF
-        asset_response = requests.get(asset_gif_url)
+        asset_response = requests.get(asset_gif_url, timeout=timeout)
+        asset_response.raise_for_status()
         asset_gif = Image.open(BytesIO(asset_response.content))
 
         return heart_gif, asset_gif
@@ -304,5 +305,9 @@ def create_heart_failure_app():
         </div>
     """, unsafe_allow_html=True)
 
-if __name__ == "__main__":
+def main():
+    """Main application function."""
     create_heart_failure_app()
+
+if __name__ == "__main__":
+    main()
