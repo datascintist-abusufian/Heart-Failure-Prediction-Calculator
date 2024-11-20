@@ -92,9 +92,9 @@ heart-failure-calculator/
 ## 👨‍⚕️ Creator
 **Md Abu Sufian**
 - 🎓 Researcher in AI & Healthcare
-- 🏛️ University of Oxford
-- 📧 [your-email@domain.com]
-- 🔗 [LinkedIn Profile](https://www.linkedin.com/in/yourusername)
+- 🏛️ University Prospective PhD Student
+- 📧 [mas.researcher@ieee.org]
+- 🔗 [LinkedIn Profile](https://www.linkedin.com/in/tacticalbusinessintelligence/)
 
 ## 📄 License
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
@@ -107,7 +107,7 @@ If you use this calculator in your research, please cite:
   title = {Heart Failure Risk Calculator},
   year = {2024},
   publisher = {GitHub},
-  url = {https://github.com/yourusername/heart-failure-calculator}
+  url = {https://github.com/datascintist-abusufian?tab=repositories}
 }
 ```
 
@@ -128,9 +128,9 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 This calculator is for educational and research purposes only. Always consult healthcare professionals for medical decisions.
 
 ## 📞 Contact
-- **Email**: your-email@domain.com
-- **LinkedIn**: [Your LinkedIn Profile](https://www.linkedin.com/in/yourusername)
-- **GitHub**: [@yourusername](https://github.com/yourusername)
+- **Email**: mas.researcher@ieee.org
+- **LinkedIn**: [LinkedIn Profile](https://www.linkedin.com/in/tacticalbusinessintelligence/)
+- **GitHub**: [Github](https://github.com/datascintist-abusufian?tab=repositories)
 
 ## 🙏 Acknowledgments
 - World Health Organization Guidelines
