@@ -7,6 +7,9 @@ from PIL import Image
 import time
 from datetime import datetime
 import json
+import requests
+from io import BytesIO
+
 
 # Cache for loading images
 @st.cache_data
