@@ -169,94 +169,94 @@ def calculate_risk_score(inputs):
     return min(100, max(0, total_score))
 
 def plot_metrics(inputs, risk_score):
-    """Create comprehensive visualization of health metrics"""
-    fig = make_subplots(
-        rows=2, cols=2,
-        subplot_titles=("Vital Signs", "Risk Factors", "BMI Category", "Blood Pressure Category")
+    """Create simplified visualization of health metrics"""
+    # Create two separate visualizations instead of subplots
+    
+    # 1. Vital Signs Bar Chart
+    vital_signs = pd.DataFrame({
+        'Metric': ["Heart Rate", "Systolic BP", "Diastolic BP"],
+        'Value': [inputs["heart_rate"], inputs["systolic_bp"], inputs["diastolic_bp"]]
+    })
+    
+    fig1 = px.bar(
+        vital_signs,
+        x='Metric',
+        y='Value',
+        title="Vital Signs",
+        text='Value'
     )
     
-    # Vital Signs
-    vital_signs = {
-        "Heart Rate": inputs["heart_rate"],
-        "Systolic BP": inputs["systolic_bp"],
-        "Diastolic BP": inputs["diastolic_bp"]
-    }
-    fig.add_trace(
-        go.Bar(
-            x=list(vital_signs.keys()),
-            y=list(vital_signs.values()),
-            text=[f"{v:.1f}" for v in vital_signs.values()],
-            textposition='outside',
-            marker_color=['#FF9999', '#99FF99', '#9999FF']
-        ),
-        row=1, col=1
+    fig1.update_traces(
+        texttemplate='%{text:.1f}',
+        textposition='outside',
+        marker_color=['#FF9999', '#99FF99', '#9999FF']
     )
     
-    # Risk Factors
-    risk_factors = {
-        "Age": inputs["age"],
-        "BMI": inputs["bmi"],
-        "Risk Score": risk_score
-    }
-    fig.add_trace(
-        go.Bar(
-            x=list(risk_factors.keys()),
-            y=list(risk_factors.values()),
-            text=[f"{v:.1f}" for v in risk_factors.values()],
-            textposition='outside',
-            marker_color=['#FFB366', '#66B2FF', '#FF66B2']
-        ),
-        row=1, col=2
+    fig1.update_layout(
+        height=400,
+        showlegend=False,
+        yaxis_title="Value",
+        xaxis_title=""
     )
     
-    # BMI Category
-    bmi = inputs["bmi"]
-    bmi_categories = ["Underweight", "Normal", "Overweight", "Obese"]
-    bmi_values = [18.5, 25, 30, 35]
-    bmi_colors = ['#FF9999', '#99FF99', '#FFFF99', '#FF9999']
+    st.plotly_chart(fig1, use_container_width=True)
     
-    fig.add_trace(
-        go.Indicator(
-            mode="gauge+number",
-            value=bmi,
-            gauge={
-                'axis': {'range': [None, 40]},
-                'steps': [
-                    {'range': [0, 18.5], 'color': '#FF9999'},
-                    {'range': [18.5, 25], 'color': '#99FF99'},
-                    {'range': [25, 30], 'color': '#FFFF99'},
-                    {'range': [30, 40], 'color': '#FF9999'}
-                ]
-            },
-            title={'text': "BMI"}
-        ),
-        row=2, col=1
+    # 2. Risk Factors Bar Chart
+    risk_factors = pd.DataFrame({
+        'Factor': ["Age", "BMI", "Risk Score"],
+        'Value': [inputs["age"], inputs["bmi"], risk_score]
+    })
+    
+    fig2 = px.bar(
+        risk_factors,
+        x='Factor',
+        y='Value',
+        title="Risk Factors",
+        text='Value'
     )
     
-    # Blood Pressure Category
-    sys_bp = inputs["systolic_bp"]
-    dia_bp = inputs["diastolic_bp"]
-    
-    fig.add_trace(
-        go.Indicator(
-            mode="gauge+number",
-            value=sys_bp,
-            gauge={
-                'axis': {'range': [0, 200]},
-                'steps': [
-                    {'range': [0, 120], 'color': '#99FF99'},
-                    {'range': [120, 130], 'color': '#FFFF99'},
-                    {'range': [130, 140], 'color': '#FFB366'},
-                    {'range': [140, 200], 'color': '#FF9999'}
-                ]
-            },
-            title={'text': "Blood Pressure"}
-        ),
-        row=2, col=2
+    fig2.update_traces(
+        texttemplate='%{text:.1f}',
+        textposition='outside',
+        marker_color=['#FFB366', '#66B2FF', '#FF66B2']
     )
     
-    fig.update_layout(height=800, showlegend=False)
-    st.plotly_chart(fig, use_container_width=True)
+    fig2.update_layout(
+        height=400,
+        showlegend=False,
+        yaxis_title="Value",
+        xaxis_title=""
+    )
+    
+    st.plotly_chart(fig2, use_container_width=True)
+    
+    # 3. Add BMI and Blood Pressure indicators
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("### BMI Category")
+        bmi = inputs["bmi"]
+        if bmi < 18.5:
+            st.error(f"Underweight (BMI: {bmi:.1f})")
+        elif 18.5 <= bmi < 25:
+            st.success(f"Normal (BMI: {bmi:.1f})")
+        elif 25 <= bmi < 30:
+            st.warning(f"Overweight (BMI: {bmi:.1f})")
+        else:
+            st.error(f"Obese (BMI: {bmi:.1f})")
+    
+    with col2:
+        st.markdown("### Blood Pressure Category")
+        sys_bp = inputs["systolic_bp"]
+        dia_bp = inputs["diastolic_bp"]
+        if sys_bp < 120 and dia_bp < 80:
+            st.success(f"Normal ({sys_bp}/{dia_bp} mmHg)")
+        elif sys_bp < 130 and dia_bp < 80:
+            st.info(f"Elevated ({sys_bp}/{dia_bp} mmHg)")
+        elif sys_bp < 140 or dia_bp < 90:
+            st.warning(f"Stage 1 Hypertension ({sys_bp}/{dia_bp} mmHg)")
+        else:
+            st.error(f"Stage 2 Hypertension ({sys_bp}/{dia_bp} mmHg)")
 
 def display_results(risk_score, inputs):
     """Display comprehensive risk assessment results"""
@@ -268,7 +268,7 @@ def display_results(risk_score, inputs):
     # Risk category and recommendations
     if risk_score < 20:
         st.markdown("""
-            <div class="risk-box low-risk">
+            <div style="padding: 20px; border-radius: 10px; background-color: #d4edda; border: 1px solid #c3e6cb;">
                 <h3>🟢 Low Risk Level</h3>
                 <p>Your calculated risk score: {:.1f}%</p>
                 <h4>Recommendations:</h4>
@@ -282,7 +282,7 @@ def display_results(risk_score, inputs):
         """.format(risk_score), unsafe_allow_html=True)
     elif risk_score < 50:
         st.markdown("""
-            <div class="risk-box medium-risk">
+            <div style="padding: 20px; border-radius: 10px; background-color: #fff3cd; border: 1px solid #ffeeba;">
                 <h3>🟡 Moderate Risk Level</h3>
                 <p>Your calculated risk score: {:.1f}%</p>
                 <h4>Recommendations:</h4>
@@ -296,7 +296,7 @@ def display_results(risk_score, inputs):
         """.format(risk_score), unsafe_allow_html=True)
     else:
         st.markdown("""
-            <div class="risk-box high-risk">
+            <div style="padding: 20px; border-radius: 10px; background-color: #f8d7da; border: 1px solid #f5c6cb;">
                 <h3>🔴 High Risk Level</h3>
                 <p>Your calculated risk score: {:.1f}%</p>
                 <h4>Recommendations:</h4>
