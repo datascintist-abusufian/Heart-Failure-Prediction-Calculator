@@ -8,6 +8,9 @@ from datetime import datetime
 import json
 import requests
 from io import BytesIO
+import sys
+import subprocess
+import pkg_resources
 
 # Configure page settings at the very start
 st.set_page_config(
