@@ -397,61 +397,61 @@ Generated on: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 RISK ASSESSMENT
 --------------
 Risk Score: {risk_score:.1f}%
-Category: {get_risk_category(risk_score)}
+Category: {"Low" if risk_score < 20 else "Moderate" if risk_score < 50 else "High"}
 
 PATIENT DATA
 -----------
-Age: {inputs['age']} years
-Sex: {inputs['sex']}
-BMI: {inputs['bmi']:.1f}
-Blood Pressure: {inputs['systolic_bp']}/{inputs['diastolic_bp']} mmHg
-Heart Rate: {inputs['heart_rate']} bpm
+Age: {age} years
+Sex: {sex}
+BMI: {bmi:.1f}
+Blood Pressure: {systolic_bp}/{diastolic_bp} mmHg
+Heart Rate: {heart_rate} bpm
 
 RISK FACTORS
 -----------
-Smoking: {inputs['smoking']}
-Diabetes: {inputs['diabetes']}
-Hypertension: {inputs['hypertension']}
+Smoking: {smoking}
+Diabetes: {diabetes}
+Hypertension: {hypertension}
 
 CLINICAL MEASUREMENTS
 -------------------
-Ejection Fraction: {inputs['ejection_fraction']}%
-BNP Level: {inputs['bnp_level']} pg/mL
+Ejection Fraction: {ejection_fraction}%
+BNP Level: {bnp_level} pg/mL
 
 LABORATORY VALUES
 ---------------
-Creatinine: {inputs['creatinine']} mg/dL
-Sodium: {inputs['sodium']} mEq/L
-Potassium: {inputs['potassium']} mEq/L
-Hemoglobin: {inputs['hemoglobin']} g/dL
+Creatinine: {creatinine} mg/dL
+Sodium: {sodium} mEq/L
+Potassium: {potassium} mEq/L
+Hemoglobin: {hemoglobin} g/dL
 
 RECOMMENDATIONS
 --------------
 {chr(10).join(get_recommendations(risk_score))}
 """
-                            st.download_button(
-                            label="📄 Download Text Report",
-                            data=text_report,
-                            file_name=f"heart_risk_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
-                            mime="text/plain",
-                            help="Download report in text format"
-                        )
-                    
-                    # Store calculation in session state
-                    st.session_state.previous_calculations.append({
-                        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "risk_score": risk_score,
-                        "parameters": {
-                            "age": age,
-                            "sex": sex,
-                            "bmi": bmi,
-                            "blood_pressure": f"{systolic_bp}/{diastolic_bp}",
-                            "heart_rate": heart_rate,
-                            "smoking": smoking,
-                            "diabetes": diabetes,
-                            "hypertension": hypertension
-                        }
-                    })
+                    st.download_button(
+                        label="📄 Download Text Report",
+                        data=text_report,
+                        file_name=f"heart_risk_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt",
+                        mime="text/plain",
+                        help="Download report in text format"
+                    )
+                
+                # Store calculation in session state
+                st.session_state.previous_calculations.append({
+                    "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    "risk_score": risk_score,
+                    "parameters": {
+                        "age": age,
+                        "sex": sex,
+                        "bmi": bmi,
+                        "blood_pressure": f"{systolic_bp}/{diastolic_bp}",
+                        "heart_rate": heart_rate,
+                        "smoking": smoking,
+                        "diabetes": diabetes,
+                        "hypertension": hypertension
+                    }
+                })
 
     with tab2:
         st.markdown("""
