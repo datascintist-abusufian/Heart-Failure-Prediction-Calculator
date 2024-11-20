@@ -9,22 +9,31 @@ import json
 import requests
 from io import BytesIO
 
-@st.cache_data()  # Note the parentheses
+# Configure page settings at the very start
+st.set_page_config(
+    page_title="Heart Failure Risk Calculator",
+    page_icon="❤️",
+    layout="wide"
+)
+
+# Initialize session state at the start
+if 'previous_calculations' not in st.session_state:
+    st.session_state.previous_calculations = []
+
+@st.cache_data(ttl=3600)  # Cache for 1 hour
 def load_images():
     """Load and cache GIF images for the application."""
     try:
-        # Use static placeholder images for testing
+        # Updated GitHub raw URLs - replace these with your actual image URLs
         heart_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/heart%20failure.gif"
         asset_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/image-asset.gif"
 
-        # Add error handling and timeout for requests
+        # Load images with timeout
         timeout = 10
         heart_response = requests.get(heart_gif_url, timeout=timeout)
-        heart_response.raise_for_status()
         heart_gif = Image.open(BytesIO(heart_response.content))
 
         asset_response = requests.get(asset_gif_url, timeout=timeout)
-        asset_response.raise_for_status()
         asset_gif = Image.open(BytesIO(asset_response.content))
 
         return heart_gif, asset_gif
@@ -33,25 +42,11 @@ def load_images():
         return None, None
 
 def calculate_bmi(weight, height):
-    """
-    Calculate BMI from weight and height.
-    
-    Parameters:
-        weight (float): Weight in kilograms
-        height (float): Height in meters
-    
-    Returns:
-        float: BMI value
-    """
+    """Calculate BMI from weight and height."""
     return weight / (height ** 2)
 
 def validate_inputs(age, bmi, systolic_bp, diastolic_bp, heart_rate):
-    """
-    Validate clinical input parameters.
-    
-    Returns:
-        bool: True if inputs are valid, False otherwise
-    """
+    """Validate clinical input parameters."""
     if systolic_bp <= diastolic_bp:
         st.error("Systolic BP must be greater than Diastolic BP")
         return False
@@ -64,106 +59,54 @@ def validate_inputs(age, bmi, systolic_bp, diastolic_bp, heart_rate):
 def calculate_risk(age, sex, bmi, systolic_bp, diastolic_bp, heart_rate, 
                    ejection_fraction, bnp_level, smoking, diabetes, hypertension,
                    creatinine, sodium, potassium, hemoglobin):
-    """Dummy function for calculating heart failure risk score."""
-    # Example formula (replace with actual ML model prediction)
+    """Calculate heart failure risk score."""
+    # Example risk calculation (replace with your actual model)
     risk_score = (
         age * 0.2 + bmi * 0.3 + systolic_bp * 0.1 + diastolic_bp * 0.05 +
         ejection_fraction * -0.3 + (1 if smoking == "Current" else 0) * 0.5 +
         (1 if diabetes == "Yes" else 0) * 0.4 + (1 if hypertension == "Yes" else 0) * 0.3
     )
-    return max(0, min(100, risk_score))  # Ensure score is between 0 and 100
+    return max(0, min(100, risk_score))
 
 def display_results(risk_score):
-    """Display results to the user."""
+    """Display risk assessment results."""
     if risk_score < 20:
-        st.success(f"Low risk of heart failure: {risk_score:.1f}")
+        st.success(f"Low risk of heart failure: {risk_score:.1f}%")
     elif risk_score < 50:
-        st.warning(f"Moderate risk of heart failure: {risk_score:.1f}")
+        st.warning(f"Moderate risk of heart failure: {risk_score:.1f}%")
     else:
-        st.error(f"High risk of heart failure: {risk_score:.1f}")
+        st.error(f"High risk of heart failure: {risk_score:.1f}%")
 
 def plot_feature_importance(inputs):
-    """Dummy feature importance plot."""
+    """Create feature importance visualization."""
     features = ["Age", "BMI", "Systolic BP", "Diastolic BP", "Heart Rate"]
-    values = [inputs["age"], inputs["bmi"], inputs["systolic_bp"], inputs["diastolic_bp"], inputs["heart_rate"]]
-    fig = px.bar(x=features, y=values, title="Feature Importance", labels={'x': 'Feature', 'y': 'Value'})
-    st.plotly_chart(fig)
-
-def create_heart_failure_app():
-    """Main application function for the Heart Failure Risk Calculator."""
+    values = [inputs["age"], inputs["bmi"], inputs["systolic_bp"], 
+             inputs["diastolic_bp"], inputs["heart_rate"]]
     
-    # Page Configuration
-    st.set_page_config(
-        page_title="Heart Failure Risk Calculator",
-        page_icon="❤️",
-        layout="wide"
+    fig = px.bar(
+        x=features, 
+        y=values, 
+        title="Clinical Parameters",
+        labels={'x': 'Parameter', 'y': 'Value'},
+        template="simple_white"
     )
+    st.plotly_chart(fig, use_container_width=True)
 
-    # Initialize session state
-    if 'previous_calculations' not in st.session_state:
-        st.session_state.previous_calculations = []
-
-    # Custom CSS for styling
-    st.markdown("""
-        <style>
-        .author-info {
-            padding: 20px;
-            background-color: #f8f9fa;
-            border-radius: 10px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .title-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 30px;
-        }
-        .gif-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 20px;
-        }
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            background-color: #f8f9fa;
-            padding: 20px;
-            text-align: center;
-        }
-        .stButton button {
-            width: 100%;
-            margin-top: 20px;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
-    # Load and display GIFs
-    heart_gif, asset_gif = load_images()
-    if heart_gif and asset_gif:
-        col1, col2, col3 = st.columns([1,2,1])
-        with col1:
-            st.image(heart_gif, width=200)
-        with col2:
-            st.title("❤️ Heart Failure Risk Calculator")
-        with col3:
-            st.image(asset_gif, width=200)
-    else:
-        st.title("❤️ Heart Failure Risk Calculator")
+def main():
+    """Main application function."""
+    # Title and Header
+    st.title("❤️ Heart Failure Risk Calculator")
+    st.markdown("---")
 
     # Author Information
     st.markdown("""
-        <div class="author-info">
-            <h3>Created by Md Abu Sufian</h3>
-            <p>Researcher in AI & Healthcare | University of Oxford</p>
-            <p>This calculator uses advanced machine learning techniques to assess heart failure risk.</p>
-            <p><a href="https://www.linkedin.com/in/your-profile">LinkedIn</a> | 
-               <a href="mailto:your.email@example.com">Email</a></p>
-        </div>
-    """, unsafe_allow_html=True)
+        ### Created by Md Abu Sufian
+        Researcher in AI & Healthcare | University of Oxford
+        
+        This calculator uses machine learning to assess heart failure risk.
+    """)
 
-    # Main content in tabs
+    # Main Interface
     tab1, tab2 = st.tabs(["Calculator", "About"])
 
     with tab1:
@@ -171,143 +114,85 @@ def create_heart_failure_app():
 
         with col1:
             st.subheader("📋 Demographics")
-            
-            # Height and Weight for BMI calculation
-            weight = st.number_input("Weight (kg)", 30.0, 200.0, 70.0, help="Enter weight in kilograms")
-            height = st.number_input("Height (m)", 1.0, 2.5, 1.7, help="Enter height in meters")
+            weight = st.number_input("Weight (kg)", 30.0, 200.0, 70.0)
+            height = st.number_input("Height (m)", 1.0, 2.5, 1.7)
             bmi = calculate_bmi(weight, height)
             st.info(f"Calculated BMI: {bmi:.1f}")
             
-            age = st.number_input("Age", 18, 120, 50, help="Enter age in years")
+            age = st.number_input("Age", 18, 120, 50)
             sex = st.selectbox("Sex", ["Male", "Female"])
-            
+
+        with col2:
             st.subheader("🩺 Vital Signs")
             systolic_bp = st.number_input("Systolic Blood Pressure (mmHg)", 70, 250, 120)
             diastolic_bp = st.number_input("Diastolic Blood Pressure (mmHg)", 40, 150, 80)
             heart_rate = st.number_input("Heart Rate (bpm)", 40, 200, 75)
 
-        with col2:
-            st.subheader("🔬 Clinical Measurements")
+        # Clinical Measurements
+        st.subheader("🔬 Clinical Measurements")
+        col3, col4 = st.columns(2)
+        
+        with col3:
             ejection_fraction = st.number_input("Ejection Fraction (%)", 10, 80, 55)
             bnp_level = st.number_input("BNP Level (pg/mL)", 0, 5000, 100)
-            
-            st.subheader("⚠️ Risk Factors")
+
+        with col4:
             smoking = st.selectbox("Smoking Status", ["Never", "Former", "Current"])
             diabetes = st.selectbox("Diabetes", ["No", "Yes"])
             hypertension = st.selectbox("Hypertension", ["No", "Yes"])
 
+        # Lab Values
         with st.expander("📊 Laboratory Values"):
-            col3, col4 = st.columns(2)
-            with col3:
+            col5, col6 = st.columns(2)
+            with col5:
                 creatinine = st.number_input("Creatinine (mg/dL)", 0.0, 15.0, 1.0)
                 sodium = st.number_input("Sodium (mEq/L)", 120, 150, 140)
-            with col4:
+            with col6:
                 potassium = st.number_input("Potassium (mEq/L)", 2.5, 7.0, 4.0)
                 hemoglobin = st.number_input("Hemoglobin (g/dL)", 5.0, 20.0, 14.0)
 
-        # Validate inputs and calculate risk
+        # Calculate Button
         if st.button("Calculate Risk Score", type="primary"):
             if validate_inputs(age, bmi, systolic_bp, diastolic_bp, heart_rate):
                 with st.spinner('Calculating risk score...'):
-                    progress_bar = st.progress(0)
-                    for i in range(100):
-                        time.sleep(0.01)
-                        progress_bar.progress(i + 1)
-                    
+                    # Calculate risk
                     risk_score = calculate_risk(
                         age, sex, bmi, systolic_bp, diastolic_bp, heart_rate,
                         ejection_fraction, bnp_level, smoking, diabetes, hypertension,
                         creatinine, sodium, potassium, hemoglobin
                     )
                     
-                    # Store calculation in session state
+                    # Display results
+                    display_results(risk_score)
+                    plot_feature_importance(locals())
+                    
+                    # Store calculation
                     st.session_state.previous_calculations.append({
                         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         "risk_score": risk_score,
                         "parameters": {
                             "age": age,
                             "sex": sex,
-                            "bmi": bmi,
-                            "ejection_fraction": ejection_fraction,
-                            "bnp_level": bnp_level
+                            "bmi": bmi
                         }
                     })
-                    
-                    display_results(risk_score)
-                    plot_feature_importance(locals())
-                    
-                    # Download report option
-                    report_data = {
-                        "Assessment Date": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        "Demographics": {
-                            "Age": age,
-                            "Sex": sex,
-                            "BMI": bmi
-                        },
-                        "Vital Signs": {
-                            "Systolic BP": systolic_bp,
-                            "Diastolic BP": diastolic_bp,
-                            "Heart Rate": heart_rate
-                        },
-                        "Clinical Measurements": {
-                            "Ejection Fraction": ejection_fraction,
-                            "BNP Level": bnp_level
-                        },
-                        "Risk Score": risk_score
-                    }
-                    
-                    st.download_button(
-                        label="Download Report",
-                        data=json.dumps(report_data, indent=4),
-                        file_name=f"heart_failure_risk_report_{datetime.now().strftime('%Y%m%d')}.json",
-                        mime="application/json"
-                    )
 
     with tab2:
         st.markdown("""
             ## About This Calculator
             
-            This Heart Failure Risk Calculator uses advanced machine learning algorithms to assess the risk of heart failure based on multiple clinical parameters. The model has been developed using extensive medical data and validated against clinical outcomes.
+            This Heart Failure Risk Calculator uses machine learning algorithms to assess heart failure risk based on clinical parameters.
             
-            ### Features Used:
-            - Demographic information
-            - Vital signs
-            - Clinical measurements
-            - Laboratory values
-            - Risk factors
-            
-            ### How to Use:
-            1. Enter your clinical parameters
-            2. Click "Calculate Risk Score"
-            3. Review your risk assessment and recommendations
-            
-            ### Scientific Background:
-            The calculator integrates multiple risk factors and biomarkers known to be associated with heart failure:
-            - Age and sex-specific risk factors
-            - Blood pressure and heart rate dynamics
-            - Cardiac biomarkers (BNP, ejection fraction)
-            - Comorbidities (diabetes, hypertension)
-            - Laboratory values
-            
-            ### Validation:
-            This tool has been validated using clinical data and follows current medical guidelines for heart failure risk assessment.
+            ### Key Features:
+            - Demographic analysis
+            - Vital sign assessment
+            - Clinical measurement evaluation
+            - Laboratory value analysis
+            - Risk factor consideration
             
             ### Disclaimer:
-            This calculator is for educational purposes only and should not replace professional medical advice. Always consult with healthcare providers for medical decisions.
+            This calculator is for educational purposes only. Always consult healthcare providers for medical decisions.
         """)
-
-    # Footer
-    st.markdown("""
-        <div class='footer'>
-            <p>© 2024 Md Abu Sufian. All rights reserved.</p>
-            <p>Contact: <a href='mailto:your.email@example.com'>your.email@example.com</a> | 
-               <a href='https://www.linkedin.com/in/your-profile'>LinkedIn</a></p>
-        </div>
-    """, unsafe_allow_html=True)
-
-def main():
-    """Main application function."""
-    create_heart_failure_app()
 
 if __name__ == "__main__":
     main()
