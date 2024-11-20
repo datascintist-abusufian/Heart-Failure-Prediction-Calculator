@@ -19,6 +19,14 @@ def load_images():
         # Updated GitHub raw URLs
         heart_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/heart%20failure.gif"
         asset_gif_url = "https://raw.githubusercontent.com/datascintist-abusufian/Heart-Failure-Prediction-Calculator/main/image-asset.gif"
+        # Load heart failure GIF
+        heart_response = requests.get(heart_gif_url)
+        heart_gif = Image.open(BytesIO(heart_response.content))
+
+        # Load asset GIF
+        asset_response = requests.get(asset_gif_url)
+        asset_gif = Image.open(BytesIO(asset_response.content)
+        
         return heart_gif, asset_gif
     except Exception as e:
         st.warning(f"Error loading images: {str(e)}")
