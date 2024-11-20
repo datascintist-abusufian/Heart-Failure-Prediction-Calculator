@@ -344,7 +344,7 @@ def main():
         st.markdown("""
             <div style='text-align: center; padding: 20px; background-color: #f0f2f6; border-radius: 10px;'>
                 <h3>Created by Md Abu Sufian</h3>
-                <p>Researcher in AI & Healthcare | University of Oxford</p>
+                <p>Researcher in AI & Healthcare | University Prospective PhD Student</p>
                 <p>This calculator uses machine learning to assess heart failure risk.</p>
             </div>
         """, unsafe_allow_html=True)
